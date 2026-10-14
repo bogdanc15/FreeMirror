@@ -1,0 +1,31 @@
+name: Build and check
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: 8.0.x
+      - name: Build, run self-checks and package approved files
+        shell: pwsh
+        run: ./scripts/Build.ps1
+      - name: Upload only the clean distributable
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: FreeMirror-win-x64
+          path: |
+            artifacts/FreeMirror-v0.1.0-win-x64.zip
+            artifacts/FreeMirror-v0.1.0-win-x64.zip.sha256
+          if-no-files-found: error
+          retention-days: 14
